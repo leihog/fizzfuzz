@@ -1,0 +1,22 @@
+url: 'http://fizzfuzzdemo.apiary-mock.com/notes'
+request:
+    method: POST
+    headers:
+        -
+            key: Content-type
+            value: application/json
+    body:
+        -
+            key: body.title
+            value: "Buy cheese and bread for breakfast."
+response:
+    statusCode: 201
+    headers:
+        Content-type: application/json
+    body:
+        -
+            key: id
+            valueType: integer
+        -
+            key: title
+            value: "Buy cheese and bread for breakfast."

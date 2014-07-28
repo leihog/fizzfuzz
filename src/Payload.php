@@ -49,27 +49,36 @@ class Payload
 
         // Test headers
         foreach ($this->expectations as $name => $expectation) {
-
             try {
                 if (substr($name, 0, 8) === 'headers.') {
                     $headerName = substr($name, 8);
                     $headerValue = $response->getHeader($headerName);
-                    $this->expectations['headers.'.strtolower($headerName)]->evaluate($headerValue, 'Header `'.$headerName.'` expected to be `%s` but was `'.$headerValue.'`');
+                    $this->expectations['headers.'.strtolower($headerName)]->evaluate(
+                        $headerValue,
+                        'Header `'.$headerName.'` expected to be `%s` but was `%s`'
+                    );
                 }
             } catch (AssertionFailedException $e) {
                 $errors[] = $e->getMessage();
             }
         }
 
-
-            // foreach ($response->getHeaders() as $header => $value) {
-            //     if (array_key_exists('headers.'.strtolower($header), $this->expectations)) {
-            //         $this->expectations['headers.'.$header]->evaluate('foo'.$value, 'Header `'.$header.'` expected to be `%s` but was `'.$value.'`');
-            //     }
-            // }
-
-
-
+        // Test body
+        $body = json_decode($response->getBody(), true);
+        foreach ($this->expectations as $name => $expectation) {
+            try {
+                if (substr($name, 0, 5) === 'body.') {
+                    $keyName = substr($name, 5);
+                    $keyValue = array_get($body, $keyName);
+                    $this->expectations['body.'.strtolower($keyName)]->evaluate(
+                        $keyValue,
+                        'Body key `'.$keyName.'` expected to be `%s` but was `%s`'
+                    );
+                }
+            } catch (AssertionFailedException $e) {
+                $errors[] = $e->getMessage();
+            }
+        }
 
         return $errors;
     }

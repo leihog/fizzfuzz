@@ -1,0 +1,20 @@
+url: 'http://fizzfuzzdemo.apiary-mock.com/notes'
+request:
+    method: GET
+response:
+    statusCode: 200
+    headers:
+        Content-type: application/json
+    body:
+        -
+            key: 0.id
+            valueType: integer
+        -
+            key: 0.title
+            valueRegex: /.*/
+        -
+            key: 1.id
+            valueType: integer
+        -
+            key: 1.title
+            valueRegex: /.*/

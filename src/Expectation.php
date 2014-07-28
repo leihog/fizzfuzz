@@ -56,13 +56,15 @@ class Expectation
     {
         switch ($this->strategy) {
             case 0:
-                $message = sprintf($message, $this->value);
+                $message = sprintf($message, $this->value, $expected);
                 Assertion::same($this->value, $expected, $message);
                 break;
             case 1:
+                $message = sprintf('Expected `%s` to match regex `%s`, but it didn\'t`', $expected, $this->value);
                 Assertion::regex($expected, $this->value, $message);
                 break;
             case 2:
+                $message = sprintf($message, $this->value, gettype($expected));
                 Assertion::same($this->value, gettype($expected), $message);
                 break;
         }

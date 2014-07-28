@@ -5,8 +5,10 @@
         "guzzlehttp/guzzle": "4.*",
         "symfony/yaml": "2.5.*",
         "symfony/console": "2.5.*",
+        "symfony/finder": "2.5.*",
         "beberlei/assert": "2.0.*",
-        "league/event": "0.*"
+        "league/event": "0.*",
+        "illuminate/support": "4.2.*"
     },
     "autoload": {
         "psr-4": {
