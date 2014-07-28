@@ -1,0 +1,55 @@
+url: 'http://localhost:8000/clientcredentials_grant.php/access_token'
+request:
+    method: POST
+    body:
+        -
+            key: grant_type
+            value: client_credentials
+            invalid:
+                response.statusCode: 400
+                response.headers.Content-type: "application/json"
+                response.body.error: invalid_grant
+                response.body.error_message: 'Invalid grant type.'
+            missing:
+                response.statusCode: 400
+                response.headers.Content-type: "application/json"
+                response.body.error: invalid_grant
+                response.body.error_message: 'Invalid grant type.'
+        -
+            key: client_id
+            value: testclient
+            invalid:
+                response.statusCode: 401
+                response.headers.Content-type: "application/json"
+                response.body.error: invalid_client
+                response.body.error_message: 'Client authentication failed.'
+            missing:
+                response.statusCode: 400
+                response.headers.Content-type: "application/json"
+                response.body.error: invalid_request
+                response.body.error_message: 'The request is missing a required parameter, includes an invalid parameter value, includes a parameter more than once, or is otherwise malformed. Check the "client_id" parameter.'
+        -
+            key: client_secret
+            value: secret
+            invalid:
+                response.statusCode: 401
+                response.body.error: invalid_client
+                response.body.error_message: 'Client authentication failed.'
+            missing:
+                response.statusCode: 400
+                response.body.error: invalid_request
+                response.body.error_message: 'The request is missing a required parameter, includes an invalid parameter value, includes a parameter more than once, or is otherwise malformed. Check the "client_secret" parameter.'
+response:
+    statusCode: 200
+    headers:
+        Content-type: application/json
+    body:
+        -
+            key: access_token
+            valueRegex: '(A-Za-z0-9){40}'
+        -
+            key: token_type
+            value: Bearer
+        -
+            key: expires_in
+            valueType: integer
