@@ -10,10 +10,8 @@ use FizzFuzz\Tasks;
 
 include __DIR__.'/../vendor/autoload.php';
 
-// $rules = YamlRuleset::parse(__DIR__.'/Example/cc.yml');
 $finder = new Finder();
 $client = new Client();
-// $payloads = (new RequestGenerator($client, $rules))->generateRequests();
 
 $application = new Application();
 $application->add(new Tasks\RunTask($finder, $client));
