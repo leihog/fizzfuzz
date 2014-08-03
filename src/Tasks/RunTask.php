@@ -83,7 +83,7 @@ class RunTask extends Command
             $progress->start($output, $numPayloads);
 
             $tableRows = [];
-            $table = new Table($output)->setHeaders(['Task', 'Result']);
+            $table = (new Table($output))->setHeaders(['Task', 'Result']);
 
             foreach ($payloads as $payload) {
 
