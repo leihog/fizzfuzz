@@ -30,7 +30,7 @@ class RunTask extends Command
         $this->setName('run')
             ->setDescription('Run FizzFuzz')
             ->addArgument(
-               'directory',
+               'path',
                InputArgument::REQUIRED,
                'Directory of rulesets'
             );
@@ -47,8 +47,18 @@ class RunTask extends Command
  | |    | |/ / / /| |  | |_| |/ / / /
  |_|    |_/___/___|_|   \__,_/___/___|');
         $output->writeln('                        by @alexbilbie');
-        $directory = $input->getArgument('directory');
-        $files = $this->finder->files()->in($directory)->name('*.yml');
+        $path = $input->getArgument('path');
+
+        if (is_dir($path)) {
+            $files = $this->finder->files()->in($path)->name('*.yml');
+        } elseif (file_exists($path)) {
+            $files = [
+                new \SplFileInfo($path)
+            ];
+        } else {
+            $output->writeln('<error>`'.$path.'` is not a directory or file that exists</error>');
+            exit(1);
+        }
 
         $output->write(str_repeat(PHP_EOL, 2));
 
