@@ -154,7 +154,7 @@ class RequestGenerator
     {
         $payloads = [];
 
-        // Generate a "perfect" request
+        // Generate an expected request
         $payloads[] = $this->generateRequest();
 
         // Loop over headers
