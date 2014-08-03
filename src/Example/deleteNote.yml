@@ -1,0 +1,5 @@
+url: 'http://fizzfuzzdemo.apiary-mock.com/notes/2'
+request:
+    method: DELETE
+response:
+    statusCode: 204
