@@ -23,9 +23,9 @@ class RequestGenerator
         $expectations = [];
 
         // Parse headers
-        if (isset($this->rules['request']['header'])) {
+        if (isset($this->rules['request']['headers'])) {
             $header = [];
-            foreach ($this->rules['request']['header'] as $headerItem) {
+            foreach ($this->rules['request']['headers'] as $headerItem) {
 
                 // Mangle a header with the same key
                 if ($propertyType === 'header' && $key === $headerItem['key']) {
