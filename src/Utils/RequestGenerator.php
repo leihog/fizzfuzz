@@ -115,7 +115,7 @@ class RequestGenerator
             $options['body'] = $body;
         }
 
-        // If we're not mangling the request set the "perfect" response expectations
+        // If we're not mangling the request set the expected response expectations
         if ($errorType === null) {
 
             if (isset($this->rules['response']['statusCode'])) {
@@ -140,7 +140,7 @@ class RequestGenerator
                 }
             }
 
-            $description = 'Default request';
+            $description = 'Expected request';
         } else {
             $description = ucfirst($errorType).' '.$propertyType.' `'.$key.'`';
         }
