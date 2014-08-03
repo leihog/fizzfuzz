@@ -11,7 +11,7 @@ class Payload
 {
     protected $description;
     protected $request;
-    protected $expectations;
+    protected $expectations = [];
 
     public function __construct($description, Request $request, array $expectations)
     {
