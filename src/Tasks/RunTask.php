@@ -41,15 +41,16 @@ class RunTask extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $start = microtime(true);
         $output->write(str_repeat(PHP_EOL, 2));
 
-        $output->writeln('  ______ _         ______
- |  ____(_)       |  ____|
- | |__   _ _______| |__ _   _ ________
- |  __| | |_  /_  /  __| | | |_  /_  /
- | |    | |/ / / /| |  | |_| |/ / / /
- |_|    |_/___/___|_|   \__,_/___/___|');
-        $output->writeln('                        by @alexbilbie');
+        $output->writeln('<fg=magenta>                      ______ _         ______
+                     |  ____(_)       |  ____|
+                     | |__   _ _______| |__ _   _ ________
+                     |  __| | |_  /_  /  __| | | |_  /_  /
+                     | |    | |/ / / /| |  | |_| |/ / / /
+                     |_|    |_/___/___|_|   \__,_/___/___|</fg=magenta>');
+        $output->writeln('<fg=magenta>                                            by @alexbilbie</fg=magenta>');
         $path = $input->getArgument('path');
 
         if (is_dir($path)) {
@@ -67,8 +68,7 @@ class RunTask extends Command
 
         foreach ($files as $file) {
 
-            $output->writeln(str_repeat('*', 80));
-            $output->write(PHP_EOL);
+            $output->writeln(PHP_EOL.str_repeat('<fg=magenta>*</fg=magenta>', 80).PHP_EOL);
 
             $output->writeln('Parsing '.$file->getRealpath());
 
@@ -76,14 +76,7 @@ class RunTask extends Command
             $payloads = (new RequestGenerator($this->client, $rules))->generateRequests();
             $numPayloads = count($payloads);
 
-            $output->writeln('Generated '.$numPayloads.' payload');
-
-            $output->writeln('Running rules...'.PHP_EOL);
-            $progress = $this->getHelper('progress');
-            $progress->start($output, $numPayloads);
-
-            $tableRows = [];
-            $table = (new Table($output))->setHeaders(['Task', 'Result']);
+            $output->writeln(sprintf('Sending %s %s...', $numPayloads, ($numPayloads === 1) ? 'payload' : 'payloads').PHP_EOL);
 
             foreach ($payloads as $payload) {
 
@@ -96,27 +89,25 @@ class RunTask extends Command
                 $errors = $payload->evaluateResponse($response);
                 $errorCount = count($errors);
                 if ($errorCount > 0) {
-                    $outputResponse = sprintf('<error>%s %s:</error>', $errorCount, ($errorCount > 1) ?'errors' : 'error');
+                    $outputResponse = '<fg=red>errored</fg=red>';
                     foreach ($errors as $error) {
-                        $outputResponse .= PHP_EOL.'<error>* '.$error.'</error>';
+                        $outputResponse .= PHP_EOL.'* <fg=red>'.$error.'</fg=red>';
                     }
                 } else {
                    $outputResponse = '<info>passed</info>';
                 }
 
-                $tableRows[] = [
-                    $payload->getDescription(),
-                    $outputResponse
-                ];
-                // $tableRows[] = new TableSeparator();
-
-                $progress->advance();
+                $output->writeln('<comment>'.$payload->getDescription().'</comment> ... '.$outputResponse);
+                $output->write(PHP_EOL);
+                $output->writeln('Request:'.PHP_EOL.'<fg=blue>'.$payload->getRequest()->__toString().'</fg=blue>');
+                $output->writeln('Response:'.PHP_EOL.'<fg=blue>'.$response->__toString().'</fg=blue>');
             }
-
-            $progress->finish();
-            $output->write(PHP_EOL);
-            $table->setRows($tableRows)->render();
-            $output->write(PHP_EOL);
         }
+
+        $output->write(PHP_EOL);
+        $output->writeln(str_repeat('<fg=magenta>*</fg=magenta>', 80));
+        $output->write(PHP_EOL);
+        $output->writeln(sprintf('<info>Completed in %ss</info>', (microtime(true) - $start)));
+        $output->write(PHP_EOL);
     }
 }
