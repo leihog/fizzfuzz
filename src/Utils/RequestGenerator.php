@@ -140,13 +140,12 @@ class RequestGenerator
                 }
             }
 
-            $description = 'Perfect request';
+            $description = 'Default request';
         } else {
             $description = ucfirst($errorType).' '.$propertyType.' `'.$key.'`';
         }
 
         $request = $this->client->createRequest($this->rules['request']['method'], $this->rules['url'], $options);
-
         $payload = new Payload($description, $request, $expectations);
         return $payload;
     }
