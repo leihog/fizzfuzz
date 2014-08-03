@@ -8,8 +8,10 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
-use Symfony\Component\Console\Helper\TableHelper;
+use use Symfony\Component\Console\Helper\Table;
+use Symfony\Component\Console\Helper\TableSeparator;
 use GuzzleHttp\Client as Client;
+use GuzzleHttp\Exception\ClientException;
 use FizzFuzz\Utils\YamlRuleset;
 use FizzFuzz\Utils\RequestGenerator;
 
@@ -81,39 +83,39 @@ class RunTask extends Command
             $progress->start($output, $numPayloads);
 
             $tableRows = [];
-            $table = $this->getHelper('table')
-                          ->setHeaders(['Task', 'Result'])
-                          ->setLayout(TableHelper::LAYOUT_DEFAULT);
+            $table = new Table($output)->setHeaders(['Task', 'Result']);
 
             foreach ($payloads as $payload) {
+
                 try {
                     $response = $this->client->send($payload->getRequest());
                 } catch (ClientException $e) {
                     $response = $e->getResponse();
-                } finally {
-                    $errors = $payload->evaluateResponse($response);
-                    $errorCount = count($errors);
-                    if ($errorCount > 0) {
-                        $outputResponse = sprintf('<error>%s %s:</error>', $errorCount, ($errorCount > 1) ?'errors' : 'error');
-                        foreach ($errors as $error) {
-                            $outputResponse .= PHP_EOL.'<error>* '.$error.'</error>';
-                        }
-                    } else {
-                       $outputResponse = '<info>passed</info>';
-                    }
-
-                    $tableRows[] = [
-                        $payload->getDescription(),
-                        $outputResponse
-                    ];
-
-                    $progress->advance();
                 }
+
+                $errors = $payload->evaluateResponse($response);
+                $errorCount = count($errors);
+                if ($errorCount > 0) {
+                    $outputResponse = sprintf('<error>%s %s:</error>', $errorCount, ($errorCount > 1) ?'errors' : 'error');
+                    foreach ($errors as $error) {
+                        $outputResponse .= PHP_EOL.'<error>* '.$error.'</error>';
+                    }
+                } else {
+                   $outputResponse = '<info>passed</info>';
+                }
+
+                $tableRows[] = [
+                    $payload->getDescription(),
+                    $outputResponse
+                ];
+                // $tableRows[] = new TableSeparator();
+
+                $progress->advance();
             }
 
             $progress->finish();
             $output->write(PHP_EOL);
-            $table->setRows($tableRows)->render($output);
+            $table->setRows($tableRows)->render();
             $output->write(PHP_EOL);
         }
     }
