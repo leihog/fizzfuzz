@@ -104,37 +104,39 @@ class RunTask extends Command
                 $output->write(PHP_EOL);
 
                 // Request
-                if ($payload->getRequest()->getHeader('content-type') === 'application/json') {
-                    $output->writeln(
-                        'Request:'.PHP_EOL.'<fg=blue>'
-                        .$payload->getRequest()->getStartLineAndHeaders(
-                            $payload->getRequest()
-                        )
-                        .json_encode(
-                            json_decode(
-                                $payload->getRequest()->getBody()
-                            ),
-                            SON_PRETTY_PRINT
-                        )
-                        .'</fg=blue>');
-                } else {
-                    $output->writeln('Request:'.PHP_EOL.'<fg=blue>'.implode(PHP_EOL, str_split($payload->getRequest()->__toString(), 80)).'</fg=blue>');
-                }
+                if ($output->isVerbose()) {
+                    if ($payload->getRequest()->getHeader('content-type') === 'application/json') {
+                        $output->writeln(
+                            'Request:'.PHP_EOL.'<fg=blue>'
+                            .$payload->getRequest()->getStartLineAndHeaders(
+                                $payload->getRequest()
+                            )
+                            .json_encode(
+                                json_decode(
+                                    $payload->getRequest()->getBody()
+                                ),
+                                SON_PRETTY_PRINT
+                            )
+                            .'</fg=blue>');
+                    } else {
+                        $output->writeln('Request:'.PHP_EOL.'<fg=blue>'.$payload->getRequest()->__toString().'</fg=blue>');
+                    }
 
-                // Response
-                if ($response->getHeader('content-type') === 'application/json') {
-                    $output->writeln('Response:'.PHP_EOL.'<fg=blue>'.
-                        $response->getStartLineAndHeaders($response)
-                        .PHP_EOL.PHP_EOL.
-                        json_encode(
-                            json_decode(
-                                $response->getBody()
-                            ),
-                            JSON_PRETTY_PRINT
-                        )
-                        .'</fg=blue>');
-                } else {
-                    $output->writeln('Response:'.PHP_EOL.'<fg=blue>'.implode(PHP_EOL, str_split($response->__toString(), 80)).'</fg=blue>');
+                    // Response
+                    if ($response->getHeader('content-type') === 'application/json') {
+                        $output->writeln('Response:'.PHP_EOL.'<fg=blue>'.
+                            $response->getStartLineAndHeaders($response)
+                            .PHP_EOL.PHP_EOL.
+                            json_encode(
+                                json_decode(
+                                    $response->getBody()
+                                ),
+                                JSON_PRETTY_PRINT
+                            )
+                            .'</fg=blue>');
+                    } else {
+                        $output->writeln('Response:'.PHP_EOL.'<fg=blue>'.$response->__toString().'</fg=blue>');
+                    }
                 }
             }
         }
