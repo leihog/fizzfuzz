@@ -3,6 +3,7 @@
 namespace FizzFuzz;
 
 use Assert\Assertion;
+use Assert\AssertionFailedException;
 
 class Expectation
 {
@@ -60,8 +61,13 @@ class Expectation
                 Assertion::same($this->value, $expected, $message);
                 break;
             case 1:
-                $message = sprintf('Expected `%s` to match regex `%s`, but it didn\'t`', $expected, $this->value);
-                Assertion::regex($expected, $this->value, $message);
+                // Test pattern is valid
+                if (@preg_match($this->value, '') === false) {
+                    Assertion::same(1, 2, sprintf('!!! FIZZFUZZ WARNING !!! `%s` is an invalid regular expression, this test was not executed', $this->value));
+                } else {
+                    $message = sprintf('Expected `%s` to match regex `%s`, but it didn\'t`', $expected, $this->value);
+                    Assertion::regex($expected, $this->value, $message);
+                }
                 break;
             case 2:
                 $message = sprintf($message, $this->value, gettype($expected));
