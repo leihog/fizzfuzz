@@ -40,7 +40,10 @@ class Payload
 
             // Test response code
             if (array_key_exists('response.statusCode', $this->expectations)) {
-                $this->expectations['response.statusCode']->evaluate((int) $response->getStatusCode(), 'Status code was expected to be `%s` but was actually `'.$response->getStatusCode().'`');
+                $this->expectations['response.statusCode']->evaluate(
+                    (int) $response->getStatusCode(),
+                    sprintf('Status code was expected to be `%s` but was actually `%s`', '%s', $response->getStatusCode())
+                );
             }
 
         } catch (AssertionFailedException $e) {
