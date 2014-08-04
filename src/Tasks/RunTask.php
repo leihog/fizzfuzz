@@ -11,7 +11,7 @@ use Symfony\Component\Finder\Finder;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Helper\TableSeparator;
 use GuzzleHttp\Client as Client;
-use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\RequestException;
 use FizzFuzz\Utils\YamlRuleset;
 use FizzFuzz\Utils\RequestGenerator;
 
@@ -82,7 +82,7 @@ class RunTask extends Command
 
                 try {
                     $response = $this->client->send($payload->getRequest());
-                } catch (ClientException $e) {
+                } catch (RequestException $e) {
                     $response = $e->getResponse();
                 }
 
