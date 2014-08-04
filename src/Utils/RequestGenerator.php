@@ -118,16 +118,25 @@ class RequestGenerator
         // If we're not mangling the request set the expected response expectations
         if ($errorType === null) {
 
+            // Expect a specific status code
             if (isset($this->rules['response']['statusCode'])) {
                 $expectations[] = (new Expectation('response', 'statusCode'))->setValue($this->rules['response']['statusCode']);
             }
 
+            // Expect headers
             if (isset($this->rules['response']['headers'])) {
-                foreach ($this->rules['response']['headers'] as $key => $value) {
-                    $expectations[] = (new Expectation('headers', strtolower($key)))->setValue($value);
+                foreach ($this->rules['response']['headers'] as $headerItem) {
+                    if (isset($bodyItem['value'])) {
+                        $expectations[] = (new Expectation('headers', strtolower($headerItem['key'])))->setValue($headerItem['value']);
+                    } elseif (isset($headerItem['valueType'])) {
+                        $expectations[] = (new Expectation('headers', strtolower($headerItem['key'])))->setValueType($headerItem['valueType']);
+                    } elseif (isset($headerItem['valueRegex'])) {
+                        $expectations[] = (new Expectation('headers', strtolower($headerItem['key'])))->setValueRegex($headerItem['valueRegex']);
+                    }
                 }
             }
 
+            // Expect body items
             if (isset($this->rules['response']['body'])) {
                 foreach ($this->rules['response']['body'] as $bodyItem) {
                     if (isset($bodyItem['value'])) {
@@ -140,7 +149,7 @@ class RequestGenerator
                 }
             }
 
-            $description = 'Expected request';
+            $description = 'Expected response';
         } else {
             $description = ucfirst($errorType).' '.$propertyType.' `'.$key.'`';
         }
