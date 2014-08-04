@@ -42,6 +42,8 @@ class RunTask extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $start = microtime(true);
+        $failure = false;
+
         $output->write(str_repeat(PHP_EOL, 2));
 
         $output->writeln('<fg=magenta>                      ______ _         ______
@@ -89,6 +91,7 @@ class RunTask extends Command
                 $errors = $payload->evaluateResponse($response);
                 $errorCount = count($errors);
                 if ($errorCount > 0) {
+                    $failure = true;
                     $outputResponse = '<fg=red>errored</fg=red>';
                     foreach ($errors as $error) {
                         $outputResponse .= PHP_EOL.'* <fg=red>'.$error.'</fg=red>';
@@ -139,7 +142,12 @@ class RunTask extends Command
         $output->write(PHP_EOL);
         $output->writeln(str_repeat('<fg=magenta>*</fg=magenta>', 80));
         $output->write(PHP_EOL);
-        $output->writeln(sprintf('<info>Completed in %ss</info>', (microtime(true) - $start)));
-        $output->write(PHP_EOL);
+        if ($failure) {
+            $output->writeln(sprintf('<fg=red>Completed in %ss but failed</fg=red>', (microtime(true) - $start)).PHP_EOL);
+            exit(1);
+        } else {
+            $output->writeln(sprintf('<info>Completed in %ss</info>', (microtime(true) - $start)).PHP_EOL);
+            exit(0);
+        }
     }
 }
