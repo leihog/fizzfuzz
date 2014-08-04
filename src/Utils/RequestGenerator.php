@@ -46,11 +46,15 @@ class RequestGenerator
                                 break;
                         }
 
+                        $description = sprintf('Invalid request header `%s`', $headerItem['key']);
+
                         foreach ($headerItem['invalid'] as $key => $value) {
                             $expectations[] = (new Expectation('headers', strtolower($key)))->setValue($value);
                         }
 
                     } elseif ($errorType === 'missing' && isset($headerItem['missing'])) {
+
+                        $description = sprintf('Missing request header `%s`', $headerItem['key']);
 
                         // Leave out the header altogether
                         foreach ($headerItem['missing'] as $key => $value) {
@@ -59,6 +63,7 @@ class RequestGenerator
 
                     }
 
+                // Heads that we're not mangling
                 } else {
                     $header[$headerItem['key']] = $headerItem['value'];
                 }
@@ -92,12 +97,17 @@ class RequestGenerator
                                 break;
                         }
 
+                        $description = sprintf('Invalid request body item `%s`', $bodyItem['key']);
+
                         foreach ($bodyItem['invalid'] as $key => $value) {
                             $parts = explode('.', $key, 2);
+
                             $expectations[] = (new Expectation($parts[0], $parts[1]))->setValue($value);
                         }
 
                     } elseif ($errorType === 'missing' && isset($bodyItem['missing'])) {
+
+                        $description = sprintf('Missing request body item `%s`', $bodyItem['key']);
 
                         // Leave out the body item altogether
                         foreach ($bodyItem['missing'] as $key => $value) {
@@ -150,12 +160,13 @@ class RequestGenerator
             }
 
             $description = 'Expected response';
-        } else {
+        } /*else {
             $description = ucfirst($errorType).' '.$propertyType.' `'.$key.'`';
-        }
+        }*/
 
         $request = $this->client->createRequest($this->rules['request']['method'], $this->rules['url'], $options);
         $payload = new Payload($description, $request, $expectations);
+        // die(var_dump($payload));
         return $payload;
     }
 
