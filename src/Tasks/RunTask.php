@@ -100,6 +100,7 @@ class RunTask extends Command
                    $outputResponse = '<info>passed</info>';
                 }
 
+                $output->write(PHP_EOL);
                 $output->writeln('<comment>'.$payload->getDescription().'</comment> ... '.$outputResponse);
                 $output->write(PHP_EOL);
 
@@ -119,7 +120,7 @@ class RunTask extends Command
                             )
                             .'</fg=blue>');
                     } else {
-                        $output->writeln('Request:'.PHP_EOL.'<fg=blue>'.$payload->getRequest()->__toString().'</fg=blue>');
+                        $output->writeln('Request:'.PHP_EOL.'<fg=blue>'.$payload->getRequest()->__toString().'</fg=blue>'.PHP_EOL);
                     }
 
                     // Response
@@ -135,7 +136,7 @@ class RunTask extends Command
                             )
                             .'</fg=blue>');
                     } else {
-                        $output->writeln('Response:'.PHP_EOL.'<fg=blue>'.$response->__toString().'</fg=blue>');
+                        $output->writeln('Response:'.PHP_EOL.'<fg=blue>'.$response->__toString().'</fg=blue>'.PHP_EOL);
                     }
                 }
             }
