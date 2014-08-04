@@ -22,148 +22,132 @@ class RequestGenerator
         $options = [];
         $expectations = [];
 
-        // Parse headers
-        if (isset($this->rules['request']['headers'])) {
-            $header = [];
-            foreach ($this->rules['request']['headers'] as $headerItem) {
+        switch ($errorType) {
 
-                // Mangle a header with the same key
-                if ($propertyType === 'header' && $key === $headerItem['key']) {
+            case 'missing':
 
-                    // Change the type
-                    if ($errorType === 'invalid' && isset($headerItem['invalid'])) {
+                if (isset($this->rules['request'][$propertyType])) {
 
-                        // Change the type
-                        switch (gettype($headerItem['value'])) {
-                            case 'string':
-                            case 'boolean':
-                                $header[$headerItem['key']] = rand(2, 1000);
-                                break;
-                            case 'integer':
-                            case 'double':
-                            case 'float':
-                                $header[$headerItem['key']] = uniqid();
-                                break;
-                        }
+                    foreach ($this->rules['request'][$propertyType] as $item) {
 
-                        $description = sprintf('Invalid request header `%s`', $headerItem['key']);
+                        // Only mangle a specific item with the same key
+                        if ($key === $item['key']) {
 
-                        foreach ($headerItem['invalid'] as $key => $value) {
-                            $expectations[] = (new Expectation('headers', strtolower($key)))->setValue($value);
-                        }
+                            $description = sprintf('Missing request %s item `%s`', ($propertyType === 'body') ? 'body' : 'header', $item['key']);
 
-                    } elseif ($errorType === 'missing' && isset($headerItem['missing'])) {
+                            // Leave out the item altogether
+                            if (isset($item['missing'])) {
+                                foreach ($item['missing'] as $key => $value) {
+                                    $parts = explode('.', $key, 2);
+                                    $expectations[] = (new Expectation($parts[0], strtolower($parts[1])))->setValue($value);
+                                }
+                            }
 
-                        $description = sprintf('Missing request header `%s`', $headerItem['key']);
-
-                        // Leave out the header altogether
-                        foreach ($headerItem['missing'] as $key => $value) {
-                            $expectations[] = (new Expectation('headers', strtolower($key)))->setValue($value);
+                        // Items that we're not mangling
+                        } else {
+                            $options[$propertyType][$item['key']] = $item['value'];
                         }
 
                     }
 
-                // Heads that we're not mangling
-                } else {
-                    $header[$headerItem['key']] = $headerItem['value'];
                 }
 
-            }
+                break;
 
-            $options['headers'] = $header;
-        }
+            case 'invalid':
 
-        // Parse body
-        if (isset($this->rules['request']['body'])) {
-            $body = [];
-            foreach ($this->rules['request']['body'] as $bodyItem) {
+                if (isset($this->rules['request'][$propertyType])) {
 
-                // Mangle a body item with the same key
-                if ($propertyType === 'body' && $key === $bodyItem['key']) {
+                    foreach ($this->rules['request'][$propertyType] as $item) {
 
-                    // Change the type
-                    if ($errorType === 'invalid' && isset($bodyItem['invalid'])) {
+                        // Mangle a header with the same key
+                        if ($key === $item['key']) {
 
-                        // Change the type
-                        switch (gettype($bodyItem['value'])) {
-                            case 'string':
-                            case 'boolean':
-                                $body[$bodyItem['key']] = rand(2, 1000);
-                                break;
-                            case 'integer':
-                            case 'double':
-                            case 'float':
-                                $body[$bodyItem['key']] = uniqid();
-                                break;
-                        }
+                            // Change the type
+                            switch (gettype($item['value'])) {
+                                case 'string':
+                                case 'boolean':
+                                    $options[$propertyType][$item['key']] = rand(2, 1000);
+                                    break;
+                                case 'integer':
+                                case 'double':
+                                case 'float':
+                                    $options[$propertyType][$item['key']] = uniqid();
+                                    break;
+                            }
 
-                        $description = sprintf('Invalid request body item `%s`', $bodyItem['key']);
+                            $description = sprintf('Invalid request %s item `%s`', ($propertyType === 'body') ? 'body' : 'header', $item['key']);
 
-                        foreach ($bodyItem['invalid'] as $key => $value) {
-                            $parts = explode('.', $key, 2);
+                            if (isset($item['invalid'])) {
+                                foreach ($item['invalid'] as $key => $value) {
+                                    $parts = explode('.', $key, 2);
+                                    $expectations[] = (new Expectation($parts[0], strtolower($parts[1])))->setValue($value);
+                                }
+                            }
 
-                            $expectations[] = (new Expectation($parts[0], $parts[1]))->setValue($value);
-                        }
-
-                    } elseif ($errorType === 'missing' && isset($bodyItem['missing'])) {
-
-                        $description = sprintf('Missing request body item `%s`', $bodyItem['key']);
-
-                        // Leave out the body item altogether
-                        foreach ($bodyItem['missing'] as $key => $value) {
-                            $parts = explode('.', $key, 2);
-                            $expectations[] = (new Expectation($parts[0], $parts[1]))->setValue($value);
+                        // Items that we're not mangling
+                        } else {
+                            $options[$propertyType][$item['key']] = $item['value'];
                         }
 
                     }
 
-                } else {
-                    $body[$bodyItem['key']] = $bodyItem['value'];
                 }
+                break;
 
-            }
-            $options['body'] = $body;
-        }
+            default:
 
-        // If we're not mangling the request set the expected response expectations
-        if ($errorType === null) {
-
-            // Expect a specific status code
-            if (isset($this->rules['response']['statusCode'])) {
-                $expectations[] = (new Expectation('response', 'statusCode'))->setValue($this->rules['response']['statusCode']);
-            }
-
-            // Expect headers
-            if (isset($this->rules['response']['headers'])) {
-                foreach ($this->rules['response']['headers'] as $headerItem) {
-                    if (isset($bodyItem['value'])) {
-                        $expectations[] = (new Expectation('headers', strtolower($headerItem['key'])))->setValue($headerItem['value']);
-                    } elseif (isset($headerItem['valueType'])) {
-                        $expectations[] = (new Expectation('headers', strtolower($headerItem['key'])))->setValueType($headerItem['valueType']);
-                    } elseif (isset($headerItem['valueRegex'])) {
-                        $expectations[] = (new Expectation('headers', strtolower($headerItem['key'])))->setValueRegex($headerItem['valueRegex']);
+                if (isset($this->rules['request']['headers'])) {
+                    foreach ($this->rules['request']['headers'] as $item) {
+                        $options['headers'][$item['key']] = $item['value'];
                     }
                 }
-            }
 
-            // Expect body items
-            if (isset($this->rules['response']['body'])) {
-                foreach ($this->rules['response']['body'] as $bodyItem) {
-                    if (isset($bodyItem['value'])) {
-                        $expectations[] = (new Expectation('body', $bodyItem['key']))->setValue($bodyItem['value']);
-                    } elseif (isset($bodyItem['valueType'])) {
-                        $expectations[] = (new Expectation('body', $bodyItem['key']))->setValueType($bodyItem['valueType']);
-                    } elseif (isset($bodyItem['valueRegex'])) {
-                        $expectations[] = (new Expectation('body', $bodyItem['key']))->setValueRegex($bodyItem['valueRegex']);
+                if (isset($this->rules['request']['body'])) {
+                    foreach ($this->rules['request']['body'] as $item) {
+                        $options['body'][$item['key']] = $item['value'];
                     }
                 }
-            }
 
-            $description = 'Expected response';
+                // Expect a specific status code
+                if (isset($this->rules['response']['statusCode'])) {
+                    $expectations[] = (new Expectation('response', 'statusCode'))->setValue($this->rules['response']['statusCode']);
+                }
+
+                // Expect headers
+                if (isset($this->rules['response']['headers'])) {
+                    foreach ($this->rules['response']['headers'] as $headerItem) {
+                        if (isset($bodyItem['value'])) {
+                            $expectations[] = (new Expectation('headers', strtolower($headerItem['key'])))->setValue($headerItem['value']);
+                        } elseif (isset($headerItem['valueType'])) {
+                            $expectations[] = (new Expectation('headers', strtolower($headerItem['key'])))->setValueType($headerItem['valueType']);
+                        } elseif (isset($headerItem['valueRegex'])) {
+                            $expectations[] = (new Expectation('headers', strtolower($headerItem['key'])))->setValueRegex($headerItem['valueRegex']);
+                        }
+                    }
+                }
+
+                // Expect body items
+                if (isset($this->rules['response']['body'])) {
+                    foreach ($this->rules['response']['body'] as $bodyItem) {
+                        if (isset($bodyItem['value'])) {
+                            $expectations[] = (new Expectation('body', $bodyItem['key']))->setValue($bodyItem['value']);
+                        } elseif (isset($bodyItem['valueType'])) {
+                            $expectations[] = (new Expectation('body', $bodyItem['key']))->setValueType($bodyItem['valueType']);
+                        } elseif (isset($bodyItem['valueRegex'])) {
+                            $expectations[] = (new Expectation('body', $bodyItem['key']))->setValueRegex($bodyItem['valueRegex']);
+                        }
+                    }
+                }
+
+                $description = 'Expected response';
+
+                break;
+
         }
 
         $request = $this->client->createRequest($this->rules['request']['method'], $this->rules['url'], $options);
-        $payload = new Payload($description, $request, $expectations);
+        $payload = new Payload($description, $request, $expectations, $output);
         return $payload;
     }
 
@@ -177,16 +161,24 @@ class RequestGenerator
         // Loop over headers
         if (isset($this->rules['request']['header'])) {
             foreach ($this->rules['request']['header'] as $headerItem) {
-                $payloads[] = $this->generateRequest('header', $headerItem['key'], 'missing');
-                $payloads[] = $this->generateRequest('header', $headerItem['key'], 'invalid');
+                if (isset($headerItem['missing'])) {
+                    $payloads[] = $this->generateRequest('header', $headerItem['key'], 'missing');
+                }
+                if (isset($headerItem['invalid'])) {
+                    $payloads[] = $this->generateRequest('header', $headerItem['key'], 'invalid');
+                }
             }
         }
 
         // Loop over body
         if (isset($this->rules['request']['body'])) {
             foreach ($this->rules['request']['body'] as $bodyItem) {
-                $payloads[] = $this->generateRequest('body', $bodyItem['key'], 'missing');
-                $payloads[] = $this->generateRequest('body', $bodyItem['key'], 'invalid');
+                if (isset($bodyItem['missing'])) {
+                    $payloads[] = $this->generateRequest('body', $bodyItem['key'], 'missing');
+                }
+                if (isset($bodyItem['invalid'])) {
+                    $payloads[] = $this->generateRequest('body', $bodyItem['key'], 'invalid');
+                }
             }
         }
 
