@@ -147,7 +147,7 @@ class RequestGenerator
         }
 
         $request = $this->client->createRequest($this->rules['request']['method'], $this->rules['url'], $options);
-        $payload = new Payload($description, $request, $expectations, $output);
+        $payload = new Payload($description, $request, $expectations);
         return $payload;
     }
 
