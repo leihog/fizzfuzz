@@ -159,13 +159,13 @@ class RequestGenerator
         $payloads[] = $this->generateRequest();
 
         // Loop over headers
-        if (isset($this->rules['request']['header'])) {
-            foreach ($this->rules['request']['header'] as $headerItem) {
+        if (isset($this->rules['request']['headers'])) {
+            foreach ($this->rules['request']['headers'] as $headerItem) {
                 if (isset($headerItem['missing'])) {
-                    $payloads[] = $this->generateRequest('header', $headerItem['key'], 'missing');
+                    $payloads[] = $this->generateRequest('headers', $headerItem['key'], 'missing');
                 }
                 if (isset($headerItem['invalid'])) {
-                    $payloads[] = $this->generateRequest('header', $headerItem['key'], 'invalid');
+                    $payloads[] = $this->generateRequest('headers', $headerItem['key'], 'invalid');
                 }
             }
         }
