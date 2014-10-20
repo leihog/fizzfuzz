@@ -22,6 +22,15 @@ class RequestGenerator
         $options = [];
         $expectations = [];
 
+        if (!is_null($errorType)) {
+            $oppositePropertyType = ($propertyType === 'body' ? 'headers' : 'body');
+            if (isset($this->rules['request'][$oppositePropertyType])) {
+                foreach ($this->rules['request'][$oppositePropertyType] as $item) {
+                    $options[$oppositePropertyType][$item['key']] = $item['value'];
+                }
+            }
+        }
+
         switch ($errorType) {
 
             case 'missing':
